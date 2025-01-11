@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SocialScope</title>
+
+    <!-- Link to Google Fonts for better typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body and Background Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Container */
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem; /* Smaller font size */
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 1rem; /* Smaller font size */
+            margin-bottom: 30px;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px; /* Smaller padding */
+            font-size: 0.9rem; /* Smaller font size */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            transition: border 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0072ff;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px; /* Smaller padding */
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1rem; /* Smaller font size */
+            font-weight: 600;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        /* Logout Button */
+        .logout-button {
+            margin-top: 20px;
+            background-color: #ff4d4d;
+            padding: 10px;
+            width: 100%;
+            border-radius: 30px;
+        }
+
+        .logout-button:hover {
+            background-color: #ff0000;
+        }
+
+        .footer-link {
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .footer-link a {
+            color: #00c6ff;
+            text-decoration: none;
+        }
+
+        .footer-link a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome, {{ session['user_email'] }}</h1> <!-- Display the user's email -->
+        <p>Enter an Instagram username below to get profile insights!</p>
+
+        <!-- Search Form -->
+        <div class="form-group">
+            <input type="text" id="username" placeholder="Enter Instagram Username" required>
+        </div>
+
+        <button class="button" onclick="searchInstagram()">Search</button>
+
+        <!-- Logout Button -->
+        <button class="logout-button" onclick="logout()">Logout</button>
+
+        <!-- Optional: Footer link for settings or other functionalities -->
+        <div class="footer-link">
+            <p><a href="#">Go to Settings</a></p>
+        </div>
+    </div>
+
+    <!-- JavaScript to handle search and logout -->
+    <script>
+        // Function to handle the Instagram search (you can link to your backend route here)
+        function searchInstagram() {
+            var username = document.getElementById('username').value;
+            if (username) {
+                window.location.href = "/instagram/" + username;  // Redirect to Instagram profile page
+            } else {
+                alert("Please enter a username!");
+            }
+        }
+
+        // Function to handle logout (you can link to your logout route here)
+        function logout() {
+            window.location.href = "/logout";  // Redirect to logout route
+        }
+    </script>
+
+</body>
+</html>

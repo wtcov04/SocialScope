@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SocialScope</title>
+
+    <!-- Link to Google Fonts for better typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body and Background Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        /* Content Container */
+        .container {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        /* Flash Messages */
+        ul {
+            list-style: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+
+        li {
+            color: #ffcc00;
+            margin: 10px 0;
+        }
+
+        /* Buttons Styling */
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .button-signup {
+            background-color: #008CBA;
+            margin-left: 15px;
+        }
+
+        .button-signup:hover {
+            background-color: #007B9E;
+        }
+
+        /* Social Media Icons */
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .social-icons a {
+            margin: 0 15px;
+            color: white;
+            font-size: 40px; /* Adjust the size of the icons */
+            transition: color 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: #ffcc00;
+        }
+
+        /* Icon as custom PNG */
+        .social-icons img {
+            width: 40px; /* Adjust the size of the icon */
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .social-icons img:hover {
+            transform: scale(1.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome to SocialScope</h1>
+        <p>Your ultimate tool for analysing your social media profile and gaining insights!</p>
+
+        <!-- Display flash messages if any -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Login and Create Account Buttons -->
+        <div>
+            <a href="{{ url_for('login') }}" class="button">Login</a>
+            <a href="{{ url_for('signup') }}" class="button button-signup">Create Account</a>
+        </div>
+
+        <!-- Social Media Icons (Instagram and TikTok) -->
+        <div class="social-icons">
+            <!-- Instagram Icon as Custom PNG -->
+            <a href="https://www.instagram.com" target="_blank" title="Instagram">
+                <img src="{{ url_for('static', filename='instagram.png') }}" alt="Instagram">
+            </a>
+            <!-- TikTok Icon as Custom PNG -->
+            <a href="https://www.tiktok.com" target="_blank" title="TikTok">
+                <img src="{{ url_for('static', filename='tiktok.png') }}" alt="TikTok">
+            </a>
+        </div>
+    </div>
+
+    <!-- Font Awesome for Social Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+</body>
+</html>
