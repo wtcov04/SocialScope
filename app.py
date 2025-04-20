@@ -487,7 +487,7 @@ def hashtag_trend():
         # Handle missing or undefined values in the data
         data = data.fillna(0)  # Replace missing data with 0
 
-        # Prepare data for the chart 
+        # Prepare data for the chart visualization
         hashtags_data = {
             'labels': data.index.strftime('%Y-%m-%d').tolist(),
             'datasets': [{
