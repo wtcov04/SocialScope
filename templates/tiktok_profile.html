@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SocialScope - TikTok</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid #f2f2f2;
+            padding-bottom: 20px;
+        }
+        .profile-info img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid #ff0050;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .stats div h3 {
+            margin-bottom: 10px;
+        }
+        .chart-section {
+            margin: 40px 0;
+        }
+        canvas {
+            max-width: 100%;
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin: 10px 0 20px;
+            flex-wrap: wrap;
+        }
+        .controls label {
+            font-weight: bold;
+        }
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .video-card {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            width: 300px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .video-card img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .watch-button, .back-button {
+            display: inline-block;
+            background-color: #ff0050;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .highlight-card {
+            background: #fff0f4;
+            border-left: 5px solid #ff0050;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 40px 0;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>SocialScope - TikTok</h1>
+
+    <!-- Profile Info -->
+    <div class="profile-info">
+        <img src="{{ user.avatarLarger }}" alt="Profile Picture">
+        <div>
+            <h2>{{ user.nickname }} <small>@{{ user.uniqueId }}</small></h2>
+            <p>{{ user.signature }}</p>
+        </div>
+    </div>
+
+    <form action="{{ url_for('save_profile', platform='tiktok', username=user.uniqueId) }}" method="post">
+        <button class="back-button" style="margin-top: 15px;" type="submit">⭐ Save TikTok Profile</button>
+    </form>    
+
+    <form method="POST" action="{{ url_for('download_tiktok_report', username=user.uniqueId) }}">
+        <button type="submit" class="back-button" style="margin-top: 10px;">📄 Download PDF Report</button>
+    </form>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div><h3>Followers</h3><p>{{ stats.followerCount }}</p></div>
+        <div><h3>Following</h3><p>{{ stats.followingCount }}</p></div>
+        <div><h3>Likes</h3><p>{{ stats.heartCount }}</p></div>
+        <div><h3>Videos</h3><p>{{ stats.videoCount }}</p></div>
+    </div>    
+
+    <!-- Charts -->
+    {% for chart in ['followersFollowing', 'likes', 'views', 'engagement'] %}
+    <div class="chart-section">
+        <h2>{{ chart.replace('followersFollowing', 'Followers vs Following')
+                     .replace('likes', 'Likes Over Time')
+                     .replace('views', 'Views Over Time')
+                     .replace('engagement', 'Engagement Rate (%)') }}</h2>
+        <div class="controls">
+            <label for="{{ chart }}Type">Chart Type:</label>
+            <select id="{{ chart }}Type">
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="radar">Radar</option>
+                <option value="doughnut">Doughnut</option>
+            </select>
+
+            <label for="{{ chart }}Color">Color:</label>
+            <input type="color" id="{{ chart }}Color" value="#ff0050">
+        </div>
+        <canvas id="{{ chart }}Chart"></canvas>
+    </div>
+    {% endfor %}
+
+    <!-- Highlight Most Liked -->
+    {% if most_liked %}
+    <div class="highlight-card">
+        <img src="{{ most_liked.cover }}" width="200" alt="Most Liked">
+        <div>
+            <h3>🔥 Most Liked Video</h3>
+            <p><strong>{{ most_liked.title or "No caption" }}</strong></p>
+            <p>❤️ {{ most_liked.digg_count }} | 👁️ {{ most_liked.play_count }} | 💬 {{ most_liked.comment_count }} | 🔁 {{ most_liked.share_count }}</p>
+            <a class="watch-button" target="_blank"
+               href="https://www.tiktok.com/@{{ user.uniqueId }}/video/{{ most_liked.id }}">▶ Watch</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Videos -->
+    <h2>Recent Videos</h2>
+    <div class="video-grid">
+        {% for post in posts[:6] %}
+        <div class="video-card">
+            <img src="{{ post.cover }}" alt="Video Thumbnail">
+            <h4>{{ post.title or "No caption" }}</h4>
+            <p>👁️ {{ post.play_count }} | ❤️ {{ post.digg_count }} | 💬 {{ post.comment_count }} | 🔁 {{ post.share_count }}</p>
+            <a class="watch-button" target="_blank"
+               href="https://www.tiktok.com/@{{ user.uniqueId }}/video/{{ post.id }}">▶ Watch</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="back-button">← Back to Dashboard</a>
+</div>
+
+<!-- Chart Data -->
+<script id="chart-data" type="application/json">
+{
+    "followersFollowing": {{ followersFollowingData | tojson }},
+    "likes": {{ likesData | tojson }},
+    "views": {{ viewsData | tojson }},
+    "engagement": {{ engagementRateData | tojson }}
+}
+</script>
+
+<!-- Chart Rendering Script -->
+<script>
+    const rawChartData = JSON.parse(document.getElementById('chart-data').textContent);
+    const chartRefs = {};
+
+    const chartConfigs = {
+        followersFollowing: 'Followers vs Following',
+        likes: 'Likes Over Time',
+        views: 'Views Over Time',
+        engagement: 'Engagement Rate (%)'
+    };
+
+    for (const key in chartConfigs) {
+        const ctx = document.getElementById(`${key}Chart`).getContext('2d');
+        const typeSelect = document.getElementById(`${key}Type`);
+        const colorPicker = document.getElementById(`${key}Color`);
+
+        const defaultColor = colorPicker.value;
+
+        rawChartData[key].datasets[0].backgroundColor = defaultColor + '33';
+        rawChartData[key].datasets[0].borderColor = defaultColor;
+
+        chartRefs[key] = new Chart(ctx, {
+            type: typeSelect.value,
+            data: rawChartData[key],
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        typeSelect.addEventListener('change', () => {
+            chartRefs[key].config.type = typeSelect.value;
+            chartRefs[key].update();
+        });
+
+        colorPicker.addEventListener('input', () => {
+            chartRefs[key].data.datasets[0].backgroundColor = colorPicker.value + '33';
+            chartRefs[key].data.datasets[0].borderColor = colorPicker.value;
+            chartRefs[key].update();
+        });
+    }
+</script>
+</body>
+</html>

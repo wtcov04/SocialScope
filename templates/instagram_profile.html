@@ -2,185 +2,215 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Instagram Profile Analytics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Profile</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
             margin: 0;
             padding: 0;
         }
+
         .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 1100px;
+            margin: auto;
+            padding: 30px;
         }
+
         h1 {
             text-align: center;
-            font-size: 2rem;
-            margin-bottom: 20px;
+            font-size: 2.4rem;
+            margin-bottom: 10px;
         }
+
         .profile-info {
-            display: flex;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #ddd;
+            text-align: center;
         }
-        .profile-info img {
-            border-radius: 50%;
-            width: 150px;
-            height: 150px;
-            margin-right: 20px;
-        }
-        .profile-info div {
-            flex-grow: 1;
-        }
+
         .profile-info h2 {
-            margin: 0;
-            font-size: 2em;
+            font-size: 1.6rem;
         }
-        .profile-info p {
-            color: #555;
-            font-size: 1.2em;
-        }
-        .profile-info a {
-            display: inline-block;
-            margin-top: 10px;
-            color: #0072ff;
-            text-decoration: none;
-            font-size: 1em;
-        }
-        .profile-info a:hover {
-            text-decoration: underline;
-        }
+
         .stats {
             display: flex;
-            justify-content: space-between;
-            padding: 20px 0;
-            border-bottom: 1px solid #ddd;
+            justify-content: center;
+            gap: 50px;
+            margin: 20px 0;
         }
+
         .stats div {
             text-align: center;
         }
-        .media-posts {
-            margin-top: 40px;
-        }
-        .media-posts h2 {
-            margin-bottom: 20px;
-        }
-        .media-post {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 20px;
-        }
-        .media-post img {
-            width: 100px;
-            height: 100px;
-            margin-right: 20px;
-        }
-        .media-post div {
-            flex-grow: 1;
-        }
-        .media-post p {
-            font-size: 1.1em;
+
+        .chart-section {
+            margin: 50px 0;
         }
 
-        /* Back to Dashboard Button */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .media-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .media-card {
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .media-card img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
         .back-button {
             display: inline-block;
-            background-color: #0072ff;
+            margin-top: 40px;
+            background: #ff0050;
             color: white;
-            padding: 12px 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 30px;
             text-decoration: none;
-            margin-top: 20px;
-            text-align: center;
-            width: 100%;
-            max-width: 200px;
+            padding: 10px 20px;
+            border-radius: 25px;
         }
 
-        .back-button:hover {
-            background-color: #005bb5;
-        }
-
-        @media (max-width: 768px) {
-            .profile-info {
-                flex-direction: column;
-                text-align: center;
-            }
-            .profile-info img {
-                margin-bottom: 20px;
-            }
-            .stats {
-                flex-direction: column;
-                text-align: center;
-            }
-            .media-post {
-                flex-direction: column;
-                align-items: center;
-            }
-            .media-post img {
-                margin-bottom: 10px;
-            }
+        .highlight-card {
+            background-color: #fff0f4;
+            border-left: 5px solid #ff0050;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 50px 0;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="profile-info">
-            <img src="{{ data['profile_pic_url'] }}" alt="Profile Picture">
-            <div>
-                <h2>{{ data['full_name'] }}</h2>
-                <p>{{ data['biography'] }}</p>
-                <p><strong>Category:</strong> {{ data['category'] }}</p>
-                <a href="{{ data['external_url'] }}" target="_blank">Visit External Link</a>
-            </div>
-        </div>
-        <div class="stats">
-            <div>
-                <h3>Followers</h3>
-                <p>{{ data['follower_count'] }}</p>
-            </div>
-            <div>
-                <h3>Following</h3>
-                <p>{{ data['following_count'] }}</p>
-            </div>
-            <div>
-                <h3>Posts</h3>
-                <p>{{ data['media_count'] }}</p>
-            </div>
-        </div>
+<div class="container">
+    <h1>Instagram Profile Analytics</h1>
 
-        <!-- Recent Media Posts -->
-        <div class="media-posts">
-            <h2>Recent Posts</h2>
-            {% for post in media_data %}
-            <div class="media-post">
-                <img src="{{ post['image_url'] }}" alt="Post Image">
-                <div>
-                    <h3>Likes: {{ post['like_count'] }}</h3>
-                    <p>Comments: {{ post['comment_count'] }}</p>
-                    <p>Engagement: 
-                        {% if data['follower_count'] > 0 %}
-                            {{ (post['like_count'] + post['comment_count']) / data['follower_count'] * 100 | round(2) }}%
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Back to Dashboard Button -->
-        <a href="{{ url_for('dashboard') }}" class="back-button">Back to Dashboard</a>
+    <div class="profile-info">
+        <h2>{{ profile.full_name }} {% if profile.verified %}✔️{% endif %}</h2>
+        <p>@{{ profile.username }}</p>
+        <p>{{ profile.bio }}</p>
+        {% if profile.external_url %}
+        <p><a href="{{ profile.external_url }}" target="_blank">{{ profile.external_url }}</a></p>
+        {% endif %}
     </div>
+
+    <form action="{{ url_for('save_profile', platform='instagram', username=profile.username) }}" method="post">
+        <button class="back-button" style="margin-top: 15px;" type="submit">⭐ Save Instagram Profile</button>
+    </form>    
+
+    <div class="stats">
+        <div><h3>Followers</h3><p>{{ profile.followers }}</p></div>
+        <div><h3>Following</h3><p>{{ profile.following }}</p></div>
+        <div><h3>Posts</h3><p>{{ profile.posts }}</p></div>
+    </div>
+
+    {% for chart in ['followersFollowing', 'likes', 'engagement'] %}
+    <div class="chart-section">
+        <h2>{{ chart.replace('followersFollowing', 'Followers vs Following')
+                     .replace('likes', 'Likes per Post')
+                     .replace('engagement', 'Engagement Rate per Post (%)') }}</h2>
+        <div class="controls">
+            <label>Chart Type:
+                <select id="{{ chart }}Type">
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                    <option value="radar">Radar</option>
+                </select>
+            </label>
+
+            <label>Color:
+                <input type="color" id="{{ chart }}Color" value="#ff0050">
+            </label>
+        </div>
+        <canvas id="{{ chart }}Chart"></canvas>
+    </div>
+    {% endfor %}
+
+    {% if top_post %}
+    <div class="highlight-card">
+        <img src="{{ top_post.thumbnail_url }}" width="200" alt="Top Post Thumbnail">
+        <div>
+            <h3>🔥 Top Liked Post</h3>
+            <p>❤️ {{ top_post.like_count }} | 💬 {{ top_post.comment_count }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <h2>Recent Posts</h2>
+    <div class="media-grid">
+        {% for post in recent_posts %}
+        <div class="media-card">
+            <img src="{{ post.thumbnail_url }}" alt="Post Thumbnail">
+            <p>❤️ {{ post.like_count }} | 💬 {{ post.comment_count }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="back-button">← Back to Dashboard</a>
+</div>
+
+<script id="chart-data" type="application/json">
+{
+    "followersFollowing": {{ followersFollowingData | tojson }},
+    "likes": {{ likesData | tojson }},
+    "engagement": {{ engagementData | tojson }}
+}
+</script>
+
+<script>
+    const rawChartData = JSON.parse(document.getElementById('chart-data').textContent);
+    const chartRefs = {};
+
+    for (const key in rawChartData) {
+        const ctx = document.getElementById(`${key}Chart`).getContext('2d');
+        const typeSelect = document.getElementById(`${key}Type`);
+        const colorPicker = document.getElementById(`${key}Color`);
+
+        const defaultColor = colorPicker.value;
+        rawChartData[key].datasets[0].backgroundColor = defaultColor + "33";
+        rawChartData[key].datasets[0].borderColor = defaultColor;
+
+        chartRefs[key] = new Chart(ctx, {
+            type: typeSelect.value,
+            data: rawChartData[key],
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        typeSelect.addEventListener('change', () => {
+            chartRefs[key].config.type = typeSelect.value;
+            chartRefs[key].update();
+        });
+
+        colorPicker.addEventListener('input', () => {
+            chartRefs[key].data.datasets[0].backgroundColor = colorPicker.value + "33";
+            chartRefs[key].data.datasets[0].borderColor = colorPicker.value;
+            chartRefs[key].update();
+        });
+    }
+</script>
 </body>
 </html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hashtag Trend</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    input {
+      padding: 12px;
+      font-size: 1rem;
+      margin-right: 10px;
+      border-radius: 5px;
+      border: 2px solid #ddd;
+      width: 200px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    canvas {
+      width: 100%;
+      height: 400px;
+      margin-top: 30px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .back-button {
+      background-color: #0072ff;
+      color: white;
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 30px;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #005bb5;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      input {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Hashtag Search Form -->
+    <form action="{{ url_for('hashtag_trend') }}" method="POST">
+      <label for="hashtag_input">Enter a Hashtag:</label>
+      <input type="text" id="hashtag_input" name="hashtag" placeholder="e.g. #fyp" required />
+      <button type="submit">Search</button>
+    </form>
+
+    <h1>Hashtag Trend: {{ hashtag }}</h1>
+    
+    {% if hashtags_data and hashtags_data.labels %}
+      <canvas id="hashtagTrendChart"></canvas>
+    {% else %}
+      <p>No data available for the selected hashtag.</p>
+    {% endif %}
+
+    <a class="back-button" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+  </div>
+
+  <script>
+    {% if hashtags_data and hashtags_data.labels %}
+      const hashtags_data = JSON.parse('{{ hashtags_data | tojson }}');
+      
+      const ctx = document.getElementById('hashtagTrendChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: hashtags_data,  // Using the data passed from Python
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              type: 'category',
+              labels: hashtags_data.labels,  // Labels from the passed data
+            },
+            y: {
+              ticks: {
+                beginAtZero: true,
+              },
+            },
+          },
+        }
+      });
+    {% endif %}
+  </script>  
+
+</body>
+</html>

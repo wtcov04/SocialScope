@@ -1,164 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SocialScope</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SocialScope - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <!-- Link to Google Fonts for better typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+      padding: 20px;
+    }
 
-    <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    .container {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 700px;
+      text-align: center;
+    }
 
-        /* Body and Background Styling */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(45deg, #00c6ff, #0072ff);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
 
-        /* Container */
-        .container {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
+    p {
+      font-size: 1rem; 
+      margin-bottom: 20px;
+    }
 
-        h1 {
-            font-size: 1.8rem; /* Smaller font size */
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
+    .form-group {
+      margin-bottom: 20px;
+    }
 
-        p {
-            font-size: 1rem; /* Smaller font size */
-            margin-bottom: 30px;
-        }
+    input {
+      width: 100%;
+      padding: 10px; 
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
 
-        /* Form Group */
-        .form-group {
-            margin-bottom: 20px;
-        }
+    .button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 1rem; 
+      font-weight: 600;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      margin-bottom: 10px;
+    }
 
-        input {
-            width: 100%;
-            padding: 8px; /* Smaller padding */
-            font-size: 0.9rem; /* Smaller font size */
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-            transition: border 0.3s ease;
-        }
+    .button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
 
-        input:focus {
-            outline: none;
-            border-color: #0072ff;
-        }
+    .small-button {
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background-color: #00c6ff;
+      border: none;
+      border-radius: 20px;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
 
-        .button {
-            width: 100%;
-            padding: 12px; /* Smaller padding */
-            background-color: #4CAF50;
-            color: white;
-            font-size: 1rem; /* Smaller font size */
-            font-weight: 600;
-            border-radius: 30px;
-            text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
+    .small-button:hover {
+      background-color: #0072ff;
+    }
 
-        .button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
-        }
+    .logout-button {
+      background-color: #ff4d4d;
+      margin-top: 20px;
+    }
 
-        .button:active {
-            transform: scale(0.95);
-        }
+    .logout-button:hover {
+      background-color: #ff0000;
+    }
 
-        /* Logout Button */
-        .logout-button {
-            margin-top: 20px;
-            background-color: #ff4d4d;
-            padding: 10px;
-            width: 100%;
-            border-radius: 30px;
-        }
+    .saved-section {
+      margin-top: 30px;
+      text-align: left;
+    }
 
-        .logout-button:hover {
-            background-color: #ff0000;
-        }
+    .saved-section h2 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: #00c6ff;
+    }
 
-        .footer-link {
-            margin-top: 20px;
-            font-size: 1rem;
-        }
+    .profile-card {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
 
-        .footer-link a {
-            color: #00c6ff;
-            text-decoration: none;
-        }
+    .profile-card a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
 
-        .footer-link a:hover {
-            text-decoration: underline;
-        }
+    .profile-card a:hover {
+      text-decoration: underline;
+    }
 
-    </style>
+    .profile-card form {
+      display: inline;
+    }
+
+    .delete-button {
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .delete-button:hover {
+      background-color: #c0392b;
+    }
+
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Welcome, {{ user_email }}</h1>
 
-    <div class="container">
-        <h1>Welcome, {{ session['user_email'] }}</h1> <!-- Display the user's email -->
-        <p>Enter an Instagram username below to get profile insights!</p>
+    <!-- TikTok Section -->
+    <p>Enter a TikTok username to get profile insights!</p>
+    <div class="form-group">
+      <input type="text" id="tiktokUsername" placeholder="Enter TikTok Username" required />
+    </div>
+    <button class="button" onclick="searchTikTok()">Search TikTok</button>
 
-        <!-- Search Form -->
-        <div class="form-group">
-            <input type="text" id="username" placeholder="Enter Instagram Username" required>
-        </div>
+    <!-- Instagram Section -->
+    <p style="margin-top: 30px;">Enter an Instagram username to get profile insights!</p>
+    <div class="form-group">
+      <input type="text" id="instagramUsername" placeholder="Enter Instagram Username" required />
+    </div>
+    <button class="button" onclick="searchInstagram()">Search Instagram</button>
 
-        <button class="button" onclick="searchInstagram()">Search</button>
+    <!-- Saved Profiles Section -->
+    <div class="saved-section">
+      {% if saved_profiles.tiktok %}
+        <h2>Saved TikTok Profiles</h2>
+        {% for username in saved_profiles.tiktok %}
+          <div class="profile-card">
+            <a href="{{ url_for('tiktok', username=username) }}">{{ username }}</a>
+            <form action="{{ url_for('delete_profile', platform='tiktok', username=username) }}" method="POST">
+              <button class="delete-button" type="submit">Delete</button>
+            </form>
+          </div>
+        {% endfor %}
+      {% endif %}
 
-        <!-- Logout Button -->
-        <button class="logout-button" onclick="logout()">Logout</button>
-
-        <!-- Optional: Footer link for settings or other functionalities -->
-        <div class="footer-link">
-            <p><a href="#">Go to Settings</a></p>
-        </div>
+      {% if saved_profiles.instagram %}
+        <h2>Saved Instagram Profiles</h2>
+        {% for username in saved_profiles.instagram %}
+          <div class="profile-card">
+            <a href="{{ url_for('instagram', username=username) }}">{{ username }}</a>
+            <form action="{{ url_for('delete_profile', platform='instagram', username=username) }}" method="POST">
+              <button class="delete-button" type="submit">Delete</button>
+            </form>
+          </div>
+        {% endfor %}
+      {% endif %}
     </div>
 
-    <!-- JavaScript to handle search and logout -->
-    <script>
-        // Function to handle the Instagram search (you can link to your backend route here)
-        function searchInstagram() {
-            var username = document.getElementById('username').value;
-            if (username) {
-                window.location.href = "/instagram/" + username;  // Redirect to Instagram profile page
-            } else {
-                alert("Please enter a username!");
-            }
-        }
+    <button class="button" onclick="window.location.href='/hashtag-trend'">Track Hashtag Trends</button>
+    <button class="button logout-button" onclick="logout()">Logout</button>
+  </div>
 
-        // Function to handle logout (you can link to your logout route here)
-        function logout() {
-            window.location.href = "/logout";  // Redirect to logout route
-        }
-    </script>
+  <script>
+    function searchTikTok() {
+      const username = document.getElementById('tiktokUsername').value.trim();
+      if (username) {
+        window.location.href = "/tiktok/" + username;
+      } else {
+        alert("Please enter a TikTok username!");
+      }
+    }
 
+    function searchInstagram() {
+      const username = document.getElementById('instagramUsername').value.trim();
+      if (username) {
+        window.location.href = "/instagram/" + username;
+      } else {
+        alert("Please enter an Instagram username!");
+      }
+    }
+
+    function logout() {
+      window.location.href = "/logout";
+    }
+  </script>
 </body>
 </html>
