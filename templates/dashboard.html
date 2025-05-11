@@ -21,7 +21,7 @@
     }
 
     .container {
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.8);
       padding: 40px;
       border-radius: 10px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -34,38 +34,36 @@
       font-size: 2rem;
       margin-bottom: 20px;
       font-weight: 600;
-    }
-
-    p {
-      font-size: 1rem; 
-      margin-bottom: 20px;
+      color: #fff;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 10px;  /* Reduced gap between input fields and buttons */
     }
 
     input {
       width: 100%;
-      padding: 10px; 
-      font-size: 1rem;
+      padding: 12px;
+      font-size: 1.1rem;
       border-radius: 6px;
       border: 1px solid #ccc;
-      margin-bottom: 10px;
+      margin-bottom: 5px;  /* Reduced margin to make the button closer to the input */
+      background-color: #fff;
+      color: #333;
     }
 
     .button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background-color: #4CAF50;
       color: white;
-      font-size: 1rem; 
+      font-size: 1.1rem;
       font-weight: 600;
-      border-radius: 30px;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
       transition: background-color 0.3s ease, transform 0.3s ease;
-      margin-bottom: 10px;
+      margin-bottom: 15px;  /* Adjusted spacing below button */
     }
 
     .button:hover {
@@ -73,26 +71,10 @@
       transform: scale(1.05);
     }
 
-    .small-button {
-      padding: 6px 14px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      background-color: #00c6ff;
-      border: none;
-      border-radius: 20px;
-      color: white;
-      text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.3s ease;
-    }
-
-    .small-button:hover {
-      background-color: #0072ff;
-    }
-
     .logout-button {
       background-color: #ff4d4d;
       margin-top: 20px;
+      width: 100%;
     }
 
     .logout-button:hover {
@@ -150,11 +132,51 @@
       background-color: #c0392b;
     }
 
+    .small-button {
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background-color: #00c6ff;
+      border: none;
+      border-radius: 20px;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+
+    .small-button:hover {
+      background-color: #0072ff;
+    }
+
+    /* Flash message styling */
+    .alert {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Welcome, {{ user_email }}</h1>
+
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert">
+          <ul>
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <!-- TikTok Section -->
     <p>Enter a TikTok username to get profile insights!</p>
@@ -196,8 +218,8 @@
         {% endfor %}
       {% endif %}
     </div>
-
-    <button class="button" onclick="window.location.href='/hashtag-trend'">Track Hashtag Trends</button>
+    
+    <a href="{{ url_for('hashtag_trends') }}" class="small-button">Go to Hashtag Trends</a>
     <button class="button logout-button" onclick="logout()">Logout</button>
   </div>
 

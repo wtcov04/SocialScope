@@ -1,31 +1,34 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file
 import requests
-import random
 import json
 import warnings
-import pandas as pd
 import firebase_admin
-from pytrends.request import TrendReq
+import time
 from firebase_admin import credentials, auth, db
+from pytrends.request import TrendReq
 from weasyprint import HTML
+import matplotlib
+matplotlib.use('Agg') 
 from matplotlib import pyplot as plt
 from io import BytesIO
 import base64
-
 
 # Ignore certain warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 app = Flask(__name__)
 app.secret_key = 'e33d2f3c993db5c91c04f16cd344b61e' 
+app.config['SESSION_COOKIE_SECURE'] = True  # Use HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 FIREBASE_API_KEY = "AIzaSyBvWfBvCtN3x99L-4g9GxKEo8ep6HhqGKI" 
-
 cred = credentials.Certificate('firebase_credentials.json') 
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://socialscope-a8af5-default-rtdb.europe-west1.firebasedatabase.app/'
 })
 
+# Routes
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -35,26 +38,25 @@ def signup():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']  
+
+        if password != confirm_password:
+            flash("Passwords do not match.")
+            return redirect(url_for('signup'))
 
         try:
+            # Create Firebase user
             user = auth.create_user(email=email, password=password)
 
             # Sign in using Firebase REST API to get ID token
             sign_in_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
-            payload = {
-                "email": email,
-                "password": password,
-                "returnSecureToken": True
-            }
+            payload = {"email": email, "password": password, "returnSecureToken": True}
             res = requests.post(sign_in_url, data=json.dumps(payload))
             id_token = res.json().get("idToken")
 
             # Send verification email
             verify_url = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
-            verify_payload = {
-                "requestType": "VERIFY_EMAIL",
-                "idToken": id_token
-            }
+            verify_payload = {"requestType": "VERIFY_EMAIL", "idToken": id_token}
             requests.post(verify_url, data=json.dumps(verify_payload))
 
             flash("Account created. A verification email has been sent to your inbox.")
@@ -65,6 +67,7 @@ def signup():
 
     return render_template('signup.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -72,27 +75,40 @@ def login():
         password = request.form['password']
 
         try:
-            user = auth.get_user_by_email(email)
-            if user:
-                session['user_id'] = user.uid  # Store user ID in the session
-                session['user_email'] = user.email  # Store email in session
-                return redirect(url_for('dashboard'))  # Redirect to dashboard after login
+            sign_in_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+            payload = {
+                "email": email,
+                "password": password,
+                "returnSecureToken": True
+            }
+
+            response = requests.post(sign_in_url, data=json.dumps(payload), headers={"Content-Type": "application/json"})
+
+            if response.status_code == 200:
+                result = response.json()
+                session['user_id'] = result['localId']
+                session['user_email'] = result['email']
+                flash("Login successful.")
+                return redirect(url_for('dashboard'))
             else:
-                flash("Invalid email or password.")  # Show error for invalid login credentials
-        except auth.UserNotFoundError:
-            flash("No user found with that email.")  # Handle user not found error
+                error_msg = response.json().get('error', {}).get('message', '')
+                print(f"Login failed: {error_msg}")
+                flash("Invalid email or password.")
+
         except Exception as e:
-            flash(f"Error: {str(e)}")  # General error handler
+            print("Login error:", str(e))
+            flash("An error occurred during login. Please try again.")
 
-    return render_template('login.html') 
+    return render_template('login.html')
 
+
+# Logout Route
 @app.route('/logout')
 def logout():
-    # Clear the session data
-    session.clear()
-    # Redirect to the login page or home page
-    return redirect(url_for('login')) 
+    session.clear()  # Clear the session data
+    return redirect(url_for('login'))
 
+# Dashboard Route
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session or 'user_email' not in session:
@@ -101,7 +117,6 @@ def dashboard():
 
     try:
         user = auth.get_user(session['user_id'])
-
         if not user.email_verified:
             flash("Please verify your email before accessing the dashboard.")
             return redirect(url_for('login'))
@@ -109,13 +124,12 @@ def dashboard():
         ref = db.reference(f"/saved_profiles/{user.uid}")
         saved_profiles = ref.get() or {}
 
-        return render_template("dashboard.html",
-                               user_email=user.email,
-                               saved_profiles=saved_profiles)
+        return render_template("dashboard.html", user_email=user.email, saved_profiles=saved_profiles)
+
     except Exception as e:
         flash("Something went wrong. Please log in again.")
         return redirect(url_for('login'))
-    
+
 @app.route('/tiktok/<username>')
 def tiktok(username):
     if 'user_id' not in session:
@@ -124,28 +138,37 @@ def tiktok(username):
 
     info_url = "https://tiktok-scraper7.p.rapidapi.com/user/info"
     posts_url = "https://tiktok-scraper7.p.rapidapi.com/user/posts"
-
     querystring = {"unique_id": username}
     headers = {
-        "X-RapidAPI-Key": "fd4843d805mshaeecba3856a33f7p130641jsn6678e926215d",
+        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
         "X-RapidAPI-Host": "tiktok-scraper7.p.rapidapi.com"
     }
 
     try:
-        # Get profile info
+        # Fetch TikTok profile info
         info_response = requests.get(info_url, headers=headers, params=querystring)
         info_response.raise_for_status()
         full_data = info_response.json()
 
+        # Check if profile data is missing or invalid
+        if "data" not in full_data or "user" not in full_data["data"]:
+            flash("Profile data not found. Please check the username and try again.")
+            return redirect(url_for('dashboard'))  # Redirect to dashboard to try again
+
         user_data = full_data["data"]["user"]
         stats_data = full_data["data"]["stats"]
 
-        # Get recent posts
+        # Fetch posts
         posts_response = requests.get(posts_url, headers=headers, params=querystring)
         posts_response.raise_for_status()
         posts_data = posts_response.json().get("data", {}).get("videos", [])
 
-        # Find most liked video
+        # Check if posts data is empty
+        if not posts_data:
+            flash("No posts available for this profile.")
+            return redirect(url_for('dashboard'))  # Redirect to dashboard to try again
+
+        # Find most liked post
         most_liked_post = None
         max_likes = -1
         for post in posts_data:
@@ -153,23 +176,19 @@ def tiktok(username):
                 most_liked_post = post
                 max_likes = post["digg_count"]
 
-        # Chart Data: Likes, Views & Engagement Over Time
-        video_labels = []
-        likes_over_time = []
-        views_over_time = []
-        engagement_rate_over_time = []
+        # Prepare data for charts
+        video_labels, likes_over_time, views_over_time, engagement_rate_over_time = [], [], [], []
 
         for i, post in enumerate(posts_data[:5]):
             video_labels.append(f"Video {i + 1}")
             likes = post.get("digg_count", 0)
             comments = post.get("comment_count", 0)
             shares = post.get("share_count", 0)
-            views = post.get("play_count", 1)  # Prevent division by 0
+            views = post.get("play_count", 1)
 
             likes_over_time.append(likes)
             views_over_time.append(views)
 
-            # Calculate engagement rate: ((likes + comments + shares) / views) * 100
             engagement = ((likes + comments + shares) / views) * 100
             engagement_rate_over_time.append(round(engagement, 2))
 
@@ -231,7 +250,7 @@ def tiktok(username):
 
     except requests.exceptions.RequestException as e:
         flash("Failed to fetch TikTok data. Please try again later.")
-        return render_template('error.html', error_message=str(e))
+        return redirect(url_for('dashboard'))  # Redirect to dashboard after error
     
 @app.route('/tiktok/<username>/download-report', methods=['POST'])
 def download_tiktok_report(username):
@@ -243,7 +262,7 @@ def download_tiktok_report(username):
     posts_url = "https://tiktok-scraper7.p.rapidapi.com/user/posts"
     querystring = {"unique_id": username}
     headers = {
-        "X-RapidAPI-Key": "fd4843d805mshaeecba3856a33f7p130641jsn6678e926215d",
+        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
         "X-RapidAPI-Host": "tiktok-scraper7.p.rapidapi.com"
     }
 
@@ -291,9 +310,8 @@ def instagram(username):
 
     info_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/web_profile_info"
     media_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/medias"
-
     headers = {
-        "X-RapidAPI-Key": "ea25d69c86mshf20970f95219b08p17faa0jsn41578a36d0c9",
+        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
         "X-RapidAPI-Host": "instagram-premium-api-2023.p.rapidapi.com"
     }
 
@@ -305,7 +323,8 @@ def instagram(username):
 
         user_data = response_json.get("user")
         if not user_data:
-            return render_template("error.html", error_message="No Instagram profile data found.")
+            flash("No Instagram profile data found. Please check the username and try again.")
+            return redirect(url_for('dashboard'))  # Redirect to dashboard
 
         # Step 2: Extract profile info
         full_name = user_data.get("full_name", "N/A")
@@ -323,7 +342,8 @@ def instagram(username):
         user_id = user_data.get("id")
 
         if not user_id:
-            return render_template("error.html", error_message="User ID not found in profile data.")
+            flash("User ID not found in profile data.")
+            return redirect(url_for('dashboard'))  # Redirect to dashboard
 
         # Followers vs Following chart
         followersFollowingData = {
@@ -343,7 +363,8 @@ def instagram(username):
         media_data_raw = media_response.json()
 
         if not isinstance(media_data_raw, list):
-            return render_template("error.html", error_message="Instagram API returned unexpected data format.")
+            flash("Instagram API returned unexpected data format.")
+            return redirect(url_for('dashboard'))  # Redirect to dashboard
 
         media_data = media_data_raw[:6]  # Limit to 6 posts
 
@@ -405,7 +426,8 @@ def instagram(username):
         )
 
     except Exception as e:
-        return render_template("error.html", error_message=f"Instagram API error: {str(e)}")
+        flash(f"Instagram API error: {str(e)}")
+        return redirect(url_for('dashboard'))  # Redirect to dashboard after error
     
 @app.route('/save-profile/<platform>/<username>', methods=['POST'])
 def save_profile(platform, username):
@@ -414,13 +436,11 @@ def save_profile(platform, username):
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    print(f"[DEBUG] Saving for user_id: {user_id}, platform: {platform}, username: {username}")
 
     try:
         # Define the Firebase reference path
         ref_path = f'saved_profiles/{user_id}/{platform}'
         ref = db.reference(ref_path)
-        print("[DEBUG] Firebase Reference Path:", ref_path)
 
         # Fetch existing data, or use empty list if none exists
         current_profiles = ref.get()
@@ -431,13 +451,11 @@ def save_profile(platform, username):
         if username not in current_profiles:
             current_profiles.append(username)
             ref.set(current_profiles)
-            print(f"[DEBUG] Username '{username}' saved for platform '{platform}'")
             flash("Profile saved successfully.")
         else:
             flash("This profile is already saved.")
 
     except Exception as e:
-        print("[ERROR] Firebase save error:", str(e))
         flash("Failed to save profile. Please try again later.")
 
     return redirect(url_for(platform, username=username))
@@ -463,48 +481,134 @@ def delete_profile(platform, username):
 
     return redirect(url_for('dashboard'))
 
-@app.route('/hashtag-trend', methods=['GET', 'POST'])
-def hashtag_trend():
-    # Default hashtag if no form is submitted
-    if request.method == 'POST':
-        # Get the hashtag from the form
-        hashtag = request.form['hashtag']  
-    else:
-        hashtag = "#fyp" 
+@app.route('/instagram/<username>/download-report', methods=['POST'])
+def download_instagram_report(username):
+
+    if 'user_id' not in session:
+        flash("You must log in to download reports.")
+        return redirect(url_for('login'))
+
+    info_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/web_profile_info"
+    media_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/medias"
+
+    headers = {
+        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
+        "X-RapidAPI-Host": "instagram-premium-api-2023.p.rapidapi.com"
+    }
 
     try:
-        # Initialize PyTrends
-        pytrends = TrendReq(hl='en-US', tz=360)
-        pytrends.build_payload([hashtag], cat=0, timeframe='today 12-m', geo='', gprop='')
+        # Step 1: Get profile info
+        profile_response = requests.get(info_url, headers=headers, params={"username": username})
+        profile_response.raise_for_status()
+        response_json = profile_response.json()
+        user_data = response_json.get("user")
 
-        # Get interest over time data for the hashtag
-        data = pytrends.interest_over_time()
+        # Step 2: Get media data
+        media_response = requests.get(media_url, headers=headers, params={"user_id": user_data["id"], "amount": 5})
+        media_response.raise_for_status()
+        media_data = media_response.json()
 
-        if data.empty:
-            flash("No data found for the hashtag trends.")
-            return render_template('hashtag_trend.html', hashtag=hashtag, hashtags_data={})
+        # Step 3: Build top_posts table data
+        top_posts = []
+        for post in media_data[:5]:
+            comment_count = post.get("comment_count", 0)
+            like_count = post.get("like_count", 0)
+            top_posts.append({"comments": comment_count, "likes": like_count})
 
-        # Handle missing or undefined values in the data
-        data = data.fillna(0)  # Replace missing data with 0
 
-        # Prepare data for the chart visualization
-        hashtags_data = {
-            'labels': data.index.strftime('%Y-%m-%d').tolist(),
-            'datasets': [{
-                'label': f'{hashtag} Trend',
-                'data': data[hashtag].tolist(),
-                'backgroundColor': 'rgba(54, 162, 235, 0.2)',
-                'borderColor': 'rgba(54, 162, 235, 1)',
-                'borderWidth': 1
-            }]
-        }
+        # Step 4: Render and generate PDF
+        rendered = render_template(
+            "instagram_report.html",
+            profile=user_data,
+            top_posts=top_posts  
+        )
+        pdf = HTML(string=rendered).write_pdf()
 
-        return render_template('hashtag_trend.html', hashtag=hashtag, hashtags_data=hashtags_data)
+        print(f"PDF generated for {username}, content size: {len(pdf)} bytes")
+
+        response = make_response(pdf)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=instagram_{username}_report.pdf'
+        return response
 
     except Exception as e:
-        print(f"Error: {e}")
-        flash(f"Error fetching hashtag trends: {str(e)}")
-        return render_template('error.html', error_message="Failed to fetch hashtag trends.")
+        flash(f"Could not generate report: {str(e)}", "danger")
+        print(f"Error: {str(e)}")
+        return redirect(url_for('instagram', username=username))
+    
+# Cache expiration time (in seconds)
+CACHE_EXPIRATION_TIME = 600   # 10 minutes (for caching the hashtag results)
+last_fetched_time = None  # Timestamp of the last API call
+last_request_time = None  # Timestamp of the last user request
+
+# Cache for storing hashtag data
+hashtag_cache = {}
+
+@app.route('/hashtag-trends', methods=['GET', 'POST'])
+def hashtag_trends():
+    global last_fetched_time, hashtag_cache, last_request_time
+
+    if 'user_id' not in session:
+        flash("You must log in to view hashtag trends.")
+        return redirect(url_for('login'))
+
+    graph_url = None
+    hashtag = None
+
+    # Get current time
+    current_time = time.time()
+
+    # 15-second cooldown between requests
+    if last_request_time and current_time - last_request_time < 15:
+        wait_time = 15 - (current_time - last_request_time)
+        flash(f"Please wait {int(wait_time)} seconds before entering a new hashtag.")
+        return redirect(request.url)  # Redirect to prevent a new request
+
+    if request.method == 'POST':
+        hashtag = request.form['hashtag'].strip('#')
+
+        # Check if we have cached data and it's not expired
+        if hashtag in hashtag_cache and current_time - last_fetched_time < CACHE_EXPIRATION_TIME:
+            print(f"Using cached data for #{hashtag}")
+            graph_url = hashtag_cache[hashtag]
+        else:
+            print(f"Fetching fresh data for #{hashtag}")
+            # Fetch the trend data for the hashtag using PyTrends
+            pytrends = TrendReq(hl='en-US', tz=360)
+            pytrends.build_payload([hashtag], timeframe='now 7-d', geo='US')
+
+            try:
+                # Get interest over time for the hashtag
+                interest_over_time_df = pytrends.interest_over_time()
+
+                if not interest_over_time_df.empty:
+                    # Plot the trend data
+                    plt.figure(figsize=(10, 6))
+                    plt.plot(interest_over_time_df.index, interest_over_time_df[hashtag], marker='o', color='b')
+                    plt.title(f"Popularity of #{hashtag} Over the Last 7 Days")
+                    plt.xlabel("Date")
+                    plt.ylabel("Popularity (Interest Over Time)")
+                    plt.grid(True)
+
+                    # Save the plot to a BytesIO object
+                    buffer = BytesIO()
+                    plt.savefig(buffer, format='png')
+                    buffer.seek(0)
+                    graph_url = base64.b64encode(buffer.read()).decode('utf-8')  # Convert the image to base64 string
+                    buffer.close()
+                    plt.close()
+
+                    # Cache the result for the hashtag
+                    hashtag_cache[hashtag] = graph_url
+                    last_fetched_time = current_time  # Update the cache time
+
+            except Exception as e:
+                flash(f"Error fetching data for #{hashtag}: {str(e)}")
+
+        # Update the last request time to current time
+        last_request_time = current_time
+
+    return render_template('hashtag_trend.html', graph_url=graph_url, hashtag=hashtag)
 
 if __name__ == '__main__':
     app.run(debug=True)

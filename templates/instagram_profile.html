@@ -111,6 +111,10 @@
         {% endif %}
     </div>
 
+    <form method="POST" action="{{ url_for('download_instagram_report', username=profile.username) }}">
+        <button type="submit" class="back-button" style="margin-top: 10px;">📄 Download PDF Report</button>
+    </form>     
+
     <form action="{{ url_for('save_profile', platform='instagram', username=profile.username) }}" method="post">
         <button class="back-button" style="margin-top: 15px;" type="submit">⭐ Save Instagram Profile</button>
     </form>    

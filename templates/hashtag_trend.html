@@ -1,152 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hashtag Trend</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f9f9f9;
-      padding: 20px;
-      margin: 0;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Hashtag Trends</title>
 
-    .container {
-      max-width: 900px;
-      margin: 40px auto;
-      background-color: #ffffff;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
+    <!-- Bootstrap CDN for responsive design and nice components -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-    h1 {
-      font-size: 2.5rem;
-      color: #333;
-      margin-bottom: 20px;
-    }
+    <style>
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+        }
 
-    form {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 30px;
-    }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-    input {
-      padding: 12px;
-      font-size: 1rem;
-      margin-right: 10px;
-      border-radius: 5px;
-      border: 2px solid #ddd;
-      width: 200px;
-    }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
 
-    button {
-      padding: 12px 20px;
-      font-size: 1rem;
-      border-radius: 5px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+        .form-group input {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
 
-    button:hover {
-      background-color: #45a049;
-    }
+        .button {
+            background-color: #007bff;
+            color: white;
+            font-size: 1rem;
+            border-radius: 5px;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
 
-    canvas {
-      width: 100%;
-      height: 400px;
-      margin-top: 30px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
+        .button:hover {
+            background-color: #0056b3;
+        }
 
-    .back-button {
-      background-color: #0072ff;
-      color: white;
-      padding: 12px 25px;
-      text-decoration: none;
-      border-radius: 5px;
-      margin-top: 30px;
-      display: inline-block;
-      transition: background-color 0.3s ease;
-    }
+        .card {
+            margin-top: 30px;
+        }
 
-    .back-button:hover {
-      background-color: #005bb5;
-    }
+        .back-button {
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
 
-    /* Responsive design */
-    @media (max-width: 768px) {
-      .container {
-        padding: 20px;
-      }
+        .back-button:hover {
+            color: #0056b3;
+        }
 
-      input {
-        width: 100%;
-        margin-bottom: 10px;
-      }
+        .graph-container {
+            text-align: center;
+            margin-top: 20px;
+        }
 
-      button {
-        width: 100%;
-      }
-    }
-
-  </style>
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Trending Hashtags</h1>
 
-  <div class="container">
-    <!-- Hashtag Search Form -->
-    <form action="{{ url_for('hashtag_trend') }}" method="POST">
-      <label for="hashtag_input">Enter a Hashtag:</label>
-      <input type="text" id="hashtag_input" name="hashtag" placeholder="e.g. #fyp" required />
-      <button type="submit">Search</button>
-    </form>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-info">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
 
-    <h1>Hashtag Trend: {{ hashtag }}</h1>
-    
-    {% if hashtags_data and hashtags_data.labels %}
-      <canvas id="hashtagTrendChart"></canvas>
-    {% else %}
-      <p>No data available for the selected hashtag.</p>
-    {% endif %}
+        <form action="{{ url_for('hashtag_trends') }}" method="POST">
+            <div class="form-group">
+                <label for="hashtag">Enter a hashtag to track:</label>
+                <input type="text" class="form-control" id="hashtag" name="hashtag" placeholder="#hashtag" required />
+            </div>
+            <button type="submit" class="button">Track Hashtag</button>
+        </form>
 
-    <a class="back-button" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
-  </div>
+        {% if graph_url %}
+        <div class="graph-container">
+            <h3>Popularity of #{{ hashtag }} Over Time</h3>
+            <img src="data:image/png;base64,{{ graph_url }}" alt="Hashtag Trend Graph" class="img-fluid" />
+        </div>
+        {% else %}
+        <div class="graph-container">
+            <p>No graph available yet. Please enter a hashtag to track.</p>
+        </div>
+        {% endif %}
 
-  <script>
-    {% if hashtags_data and hashtags_data.labels %}
-      const hashtags_data = JSON.parse('{{ hashtags_data | tojson }}');
-      
-      const ctx = document.getElementById('hashtagTrendChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: hashtags_data,  // Using the data passed from Python
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              type: 'category',
-              labels: hashtags_data.labels,  // Labels from the passed data
-            },
-            y: {
-              ticks: {
-                beginAtZero: true,
-              },
-            },
-          },
-        }
-      });
-    {% endif %}
-  </script>  
+        <a href="{{ url_for('dashboard') }}" class="back-button">Back to Dashboard</a>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
