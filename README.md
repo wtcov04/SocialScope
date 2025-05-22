@@ -26,6 +26,8 @@ To create a user-friendly platform that helps influencers and general users gain
 - 🧾 PDF report export for TikTok analytics
 - 🔐 Email/password login system (Firebase Auth)
 - ✅ Functional and usability testing with real influencers
+- Performance Benchmarking (Updated)
+
 
 
 ## 🧪 Testing
