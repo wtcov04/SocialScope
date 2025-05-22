@@ -4,6 +4,7 @@ import json
 import warnings
 import firebase_admin
 import time
+import os
 from firebase_admin import credentials, auth, db
 from pytrends.request import TrendReq
 from weasyprint import HTML
@@ -22,11 +23,13 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-FIREBASE_API_KEY = "AIzaSyBvWfBvCtN3x99L-4g9GxKEo8ep6HhqGKI" 
+FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 cred = credentials.Certificate('firebase_credentials.json') 
+FIREBASE_DATABASE_URL = os.environ.get("FIREBASE_DATABASE_URL")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://socialscope-a8af5-default-rtdb.europe-west1.firebasedatabase.app/'
+    'databaseURL': FIREBASE_DATABASE_URL
 })
+
 
 # Routes
 @app.route('/')
@@ -139,9 +142,10 @@ def tiktok(username):
     info_url = "https://tiktok-scraper7.p.rapidapi.com/user/info"
     posts_url = "https://tiktok-scraper7.p.rapidapi.com/user/posts"
     querystring = {"unique_id": username}
+    
     headers = {
-        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
-        "X-RapidAPI-Host": "tiktok-scraper7.p.rapidapi.com"
+        "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": os.environ.get("TIKTOK_API_HOST")
     }
 
     try:
@@ -315,9 +319,10 @@ def download_tiktok_report(username):
     info_url = "https://tiktok-scraper7.p.rapidapi.com/user/info"
     posts_url = "https://tiktok-scraper7.p.rapidapi.com/user/posts"
     querystring = {"unique_id": username}
+
     headers = {
-        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
-        "X-RapidAPI-Host": "tiktok-scraper7.p.rapidapi.com"
+        "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": os.environ.get("TIKTOK_API_HOST")
     }
 
     try:
@@ -364,9 +369,10 @@ def instagram(username):
 
     info_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/web_profile_info"
     media_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/medias"
+
     headers = {
-        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
-        "X-RapidAPI-Host": "instagram-premium-api-2023.p.rapidapi.com"
+        "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": os.environ.get("INSTAGRAM_API_HOST")
     }
 
     try:
@@ -546,8 +552,8 @@ def download_instagram_report(username):
     media_url = "https://instagram-premium-api-2023.p.rapidapi.com/v1/user/medias"
 
     headers = {
-        "X-RapidAPI-Key": "350b0aefaamshb8134c108194b1ep11e3c8jsndb8efa7f8d9c",
-        "X-RapidAPI-Host": "instagram-premium-api-2023.p.rapidapi.com"
+        "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": os.environ.get("INSTAGRAM_API_HOST")
     }
 
     try:
@@ -664,4 +670,5 @@ def hashtag_trends():
     return render_template('hashtag_trend.html', graph_url=graph_url, hashtag=hashtag)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
