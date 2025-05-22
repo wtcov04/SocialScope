@@ -24,8 +24,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
-firebase_credentials = json.loads(os.environ.get("FIREBASE_CREDENTIALS_JSON"))
-cred = credentials.Certificate(firebase_credentials)
+cred = credentials.Certificate('firebase_credentials.json') 
 FIREBASE_DATABASE_URL = os.environ.get("FIREBASE_DATABASE_URL")
 firebase_admin.initialize_app(cred, {
     'databaseURL': FIREBASE_DATABASE_URL
@@ -143,7 +142,6 @@ def tiktok(username):
     info_url = "https://tiktok-scraper7.p.rapidapi.com/user/info"
     posts_url = "https://tiktok-scraper7.p.rapidapi.com/user/posts"
     querystring = {"unique_id": username}
-    
     headers = {
         "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
         "X-RapidAPI-Host": os.environ.get("TIKTOK_API_HOST")
@@ -320,7 +318,6 @@ def download_tiktok_report(username):
     info_url = "https://tiktok-scraper7.p.rapidapi.com/user/info"
     posts_url = "https://tiktok-scraper7.p.rapidapi.com/user/posts"
     querystring = {"unique_id": username}
-
     headers = {
         "X-RapidAPI-Key": os.environ.get("RAPIDAPI_KEY"),
         "X-RapidAPI-Host": os.environ.get("TIKTOK_API_HOST")
