@@ -24,7 +24,8 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
-cred = credentials.Certificate('firebase_credentials.json') 
+firebase_credentials = json.loads(os.environ.get("FIREBASE_CREDENTIALS_JSON"))
+cred = credentials.Certificate(firebase_credentials)
 FIREBASE_DATABASE_URL = os.environ.get("FIREBASE_DATABASE_URL")
 firebase_admin.initialize_app(cred, {
     'databaseURL': FIREBASE_DATABASE_URL
