@@ -1,220 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Instagram Profile Analytics</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7fb;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <title>SocialScope - Instagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            padding: 30px;
-        }
+  <!-- Bootstrap & Chart.js -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        h1 {
-            text-align: center;
-            font-size: 2.4rem;
-            margin-bottom: 10px;
-        }
+  <style>
+    body {
+      background-color: #f4f7fb;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        .profile-info {
-            text-align: center;
-        }
+    .metric-card {
+      border-left: 5px solid #ff0050;
+      background-color: #fff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    }
 
-        .profile-info h2 {
-            font-size: 1.6rem;
-        }
+    .chart-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
 
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 50px;
-            margin: 20px 0;
-        }
+    .highlight-card {
+      background: #fff0f4;
+      border-left: 5px solid #ff0050;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 40px 0;
+    }
 
-        .stats div {
-            text-align: center;
-        }
-
-        .chart-section {
-            margin: 50px 0;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .media-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .media-card {
-            background-color: white;
-            padding: 10px;
-            border-radius: 10px;
-            width: 300px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .media-card img {
-            width: 100%;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .back-button {
-            display: inline-block;
-            margin-top: 40px;
-            background: #ff0050;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-        }
-
-        .highlight-card {
-            background-color: #fff0f4;
-            border-left: 5px solid #ff0050;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 50px 0;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-    </style>
+    .media-card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-    <h1>Instagram Profile Analytics</h1>
+<div class="container py-5">
 
-    <div class="profile-info">
-        <h2>{{ profile.full_name }} {% if profile.verified %}✔️{% endif %}</h2>
-        <p>@{{ profile.username }}</p>
-        <p>{{ profile.bio }}</p>
-        {% if profile.external_url %}
-        <p><a href="{{ profile.external_url }}" target="_blank">{{ profile.external_url }}</a></p>
-        {% endif %}
-    </div>
+  <!-- Back to Dashboard -->
+  <div class="d-flex justify-content-end mb-3">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">← Back to Dashboard</a>
+  </div>
 
+  <h1 class="text-center mb-4">SocialScope - Instagram</h1>
+  </div>
+
+  <!-- Buttons -->
+  <div class="d-flex gap-3 mb-4 flex-wrap">
     <form method="POST" action="{{ url_for('download_instagram_report', username=profile.username) }}">
-        <button type="submit" class="back-button" style="margin-top: 10px;">📄 Download PDF Report</button>
-    </form>     
-
+      <button type="submit" class="btn btn-outline-secondary">📄 Download PDF Report</button>
+    </form>
     <form action="{{ url_for('save_profile', platform='instagram', username=profile.username) }}" method="post">
-        <button class="back-button" style="margin-top: 15px;" type="submit">⭐ Save Instagram Profile</button>
-    </form>    
+      <button type="submit" class="btn btn-outline-primary">⭐ Save Instagram Profile</button>
+    </form>
+  </div>
 
-    <div class="stats">
-        <div><h3>Followers</h3><p>{{ profile.followers }}</p></div>
-        <div><h3>Following</h3><p>{{ profile.following }}</p></div>
-        <div><h3>Posts</h3><p>{{ profile.posts }}</p></div>
+  <!-- Stats Grid -->
+  <div class="row text-center mb-5">
+    <div class="col-md-4 mb-3">
+      <div class="card metric-card p-3">
+        <h6>Followers</h6>
+        <h4>{{ profile.followers }}</h4>
+      </div>
     </div>
+    <div class="col-md-4 mb-3">
+      <div class="card metric-card p-3">
+        <h6>Following</h6>
+        <h4>{{ profile.following }}</h4>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card metric-card p-3">
+        <h6>Posts</h6>
+        <h4>{{ profile.posts }}</h4>
+      </div>
+    </div>
+  </div>
 
-    {% for chart in ['followersFollowing', 'likes', 'engagement'] %}
-    <div class="chart-section">
-        <h2>{{ chart.replace('followersFollowing', 'Followers vs Following')
-                     .replace('likes', 'Likes per Post')
-                     .replace('engagement', 'Engagement Rate per Post (%)') }}</h2>
-        <div class="controls">
-            <label>Chart Type:
-                <select id="{{ chart }}Type">
-                    <option value="bar">Bar</option>
-                    <option value="line">Line</option>
-                    <option value="radar">Radar</option>
-                </select>
-            </label>
+  <!-- Charts -->
+  {% for chart in ['followersFollowing', 'likes', 'engagement'] %}
+  <div class="chart-container">
+    <h5>{{ chart.replace('followersFollowing', 'Followers vs Following')
+                 .replace('likes', 'Likes per Post')
+                 .replace('engagement', 'Engagement Rate per Post (%)') }}</h5>
+    <div class="d-flex flex-wrap align-items-center gap-3 my-3">
+      <label for="{{ chart }}Type">Chart Type:</label>
+      <select id="{{ chart }}Type" class="form-select w-auto">
+        <option value="bar">Bar</option>
+        <option value="line">Line</option>
+        <option value="radar">Radar</option>
+      </select>
+      <label for="{{ chart }}Color">Color:</label>
+      <input type="color" id="{{ chart }}Color" value="#ff0050">
+    </div>
+    <canvas id="{{ chart }}Chart"></canvas>
+  </div>
+  {% endfor %}
 
-            <label>Color:
-                <input type="color" id="{{ chart }}Color" value="#ff0050">
-            </label>
+  <!-- Top Liked Post -->
+  {% if top_post %}
+  <div class="highlight-card d-flex flex-column flex-md-row align-items-center gap-4">
+    <img src="{{ top_post.thumbnail_url }}" width="200" alt="Top Post Thumbnail">
+    <div>
+      <h5>🔥 Top Liked Post</h5>
+      <p>❤️ {{ top_post.like_count }} | 💬 {{ top_post.comment_count }}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Posts -->
+  <h2 class="mt-5">Recent Posts</h2>
+  <div class="row">
+    {% for post in recent_posts %}
+    <div class="col-md-4 mb-4">
+      <div class="card media-card shadow-sm">
+        <img src="{{ post.thumbnail_url }}" alt="Post Thumbnail">
+        <div class="card-body">
+          <p class="text-muted small">❤️ {{ post.like_count }} | 💬 {{ post.comment_count }}</p>
         </div>
-        <canvas id="{{ chart }}Chart"></canvas>
+      </div>
     </div>
     {% endfor %}
+  </div>
 
-    {% if top_post %}
-    <div class="highlight-card">
-        <img src="{{ top_post.thumbnail_url }}" width="200" alt="Top Post Thumbnail">
-        <div>
-            <h3>🔥 Top Liked Post</h3>
-            <p>❤️ {{ top_post.like_count }} | 💬 {{ top_post.comment_count }}</p>
-        </div>
-    </div>
-    {% endif %}
-
-    <h2>Recent Posts</h2>
-    <div class="media-grid">
-        {% for post in recent_posts %}
-        <div class="media-card">
-            <img src="{{ post.thumbnail_url }}" alt="Post Thumbnail">
-            <p>❤️ {{ post.like_count }} | 💬 {{ post.comment_count }}</p>
-        </div>
-        {% endfor %}
-    </div>
-
-    <a href="{{ url_for('dashboard') }}" class="back-button">← Back to Dashboard</a>
 </div>
 
+<!-- Chart Data & JS -->
 <script id="chart-data" type="application/json">
 {
-    "followersFollowing": {{ followersFollowingData | tojson }},
-    "likes": {{ likesData | tojson }},
-    "engagement": {{ engagementData | tojson }}
+  "followersFollowing": {{ followersFollowingData | tojson }},
+  "likes": {{ likesData | tojson }},
+  "engagement": {{ engagementData | tojson }}
 }
 </script>
 
 <script>
-    const rawChartData = JSON.parse(document.getElementById('chart-data').textContent);
-    const chartRefs = {};
+  const rawChartData = JSON.parse(document.getElementById('chart-data').textContent);
+  const chartRefs = {};
 
-    for (const key in rawChartData) {
-        const ctx = document.getElementById(`${key}Chart`).getContext('2d');
-        const typeSelect = document.getElementById(`${key}Type`);
-        const colorPicker = document.getElementById(`${key}Color`);
+  for (const key in rawChartData) {
+    const ctx = document.getElementById(`${key}Chart`).getContext('2d');
+    const typeSelect = document.getElementById(`${key}Type`);
+    const colorPicker = document.getElementById(`${key}Color`);
 
-        const defaultColor = colorPicker.value;
-        rawChartData[key].datasets[0].backgroundColor = defaultColor + "33";
-        rawChartData[key].datasets[0].borderColor = defaultColor;
+    const defaultColor = colorPicker.value;
+    rawChartData[key].datasets[0].backgroundColor = defaultColor + "33";
+    rawChartData[key].datasets[0].borderColor = defaultColor;
 
-        chartRefs[key] = new Chart(ctx, {
-            type: typeSelect.value,
-            data: rawChartData[key],
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+    chartRefs[key] = new Chart(ctx, {
+      type: typeSelect.value,
+      data: rawChartData[key],
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
 
-        typeSelect.addEventListener('change', () => {
-            chartRefs[key].config.type = typeSelect.value;
-            chartRefs[key].update();
-        });
+    typeSelect.addEventListener('change', () => {
+      chartRefs[key].config.type = typeSelect.value;
+      chartRefs[key].update();
+    });
 
-        colorPicker.addEventListener('input', () => {
-            chartRefs[key].data.datasets[0].backgroundColor = colorPicker.value + "33";
-            chartRefs[key].data.datasets[0].borderColor = colorPicker.value;
-            chartRefs[key].update();
-        });
-    }
+    colorPicker.addEventListener('input', () => {
+      chartRefs[key].data.datasets[0].backgroundColor = colorPicker.value + "33";
+      chartRefs[key].data.datasets[0].borderColor = colorPicker.value;
+      chartRefs[key].update();
+    });
+  }
 </script>
 </body>
 </html>

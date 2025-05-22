@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 app = Flask(__name__)
 app.secret_key = 'e33d2f3c993db5c91c04f16cd344b61e' 
-app.config['SESSION_COOKIE_SECURE'] = True  # Use HTTPS
+app.config['SESSION_COOKIE_SECURE'] = True  
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
@@ -236,6 +236,59 @@ def tiktok(username):
             }]
         }
 
+        # Benchmark values
+        benchmark_engagement = 3.6
+        benchmark_likes = 980
+        benchmark_growth = 2.1
+
+        # User values (real data already calculated)
+        user_engagement = round(sum(engagement_rate_over_time) / len(engagement_rate_over_time), 2) if engagement_rate_over_time else 0
+        user_likes = round(sum(likes_over_time) / len(likes_over_time), 2) if likes_over_time else 0
+        user_growth = 2.9  # Replace with dynamic value if stored historically
+
+        # Normalise user values relative to benchmarks
+        user_values = [
+            user_engagement / benchmark_engagement if benchmark_engagement else 0,
+            user_likes / benchmark_likes if benchmark_likes else 0,
+            user_growth / benchmark_growth if benchmark_growth else 0
+        ]
+
+        benchmark_values = [1, 1, 1]  # Benchmark bars = 100% reference
+
+        labels = ['Engagement Rate', 'Avg Likes', 'Monthly Growth']
+        x = range(len(labels))
+        width = 0.35
+
+        # Plot
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.bar([p - width/2 for p in x], user_values, width, label='Your Profile', color='dodgerblue')
+        ax.bar([p + width/2 for p in x], benchmark_values, width, label='Benchmark (100%)', color='lightgray')
+
+        ax.set_ylabel('Normalised Score (1 = Benchmark)')
+        ax.set_title('Performance Benchmarking (Relative to Benchmark)')
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(labels, rotation=15)
+        ax.set_ylim(0, max(max(user_values), 1.2))  # Extend y-limit slightly for clarity
+        ax.legend()
+
+  
+        for i, v in enumerate(user_values):
+            ax.text(x[i] - width/2, v + 0.05, f"{v:.2f}", ha='center', fontsize=8)
+        for i, v in enumerate(benchmark_values):
+            ax.text(x[i] + width/2, v + 0.05, f"{v:.2f}", ha='center', fontsize=8)
+
+        plt.tight_layout()
+
+        # Encode chart as base64 for embedding in HTML
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        benchmark_chart = base64.b64encode(buffer.read()).decode('utf-8')
+        buffer.close()
+        plt.close()
+
+
+
         return render_template(
             'tiktok_profile.html',
             user=user_data,
@@ -245,7 +298,8 @@ def tiktok(username):
             likesData=likesData,
             viewsData=viewsData,
             engagementRateData=engagementRateData,
-            followersFollowingData=followersFollowingData
+            followersFollowingData=followersFollowingData,
+            benchmark_chart=benchmark_chart
         )
 
     except requests.exceptions.RequestException as e:
@@ -533,7 +587,6 @@ def download_instagram_report(username):
 
     except Exception as e:
         flash(f"Could not generate report: {str(e)}", "danger")
-        print(f"Error: {str(e)}")
         return redirect(url_for('instagram', username=username))
     
 # Cache expiration time (in seconds)
