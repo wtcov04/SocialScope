@@ -18,7 +18,7 @@ import base64
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 app = Flask(__name__)
-app.secret_key = 'e33d2f3c993db5c91c04f16cd344b61e' 
+app.secret_key = os.environ.get("SECRET_KEY", "fallback_key")
 app.config['SESSION_COOKIE_SECURE'] = True  
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
